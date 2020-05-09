@@ -1,37 +1,79 @@
-from flask import Blueprint, render_template, session, flash, request, url_for
-from helpers.render import render
+from flask import Blueprint, render_template, request, flash, url_for, redirect, session
 from werkzeug.security import check_password_hash
-from flask_login import login_user, logout_user, login_required
-from models import user
+from models.user import User
+from flask_login import current_user, login_user, logout_user, login_required
+from instagram_web.util.o_auth import oauth
 
 sessions_blueprint = Blueprint(
     "sessions", __name__, template_folder="templates")
 
+# @sessions_blueprint.route('/home')
+# def index():
+#     return render_template('home.html')
 
-@sessions_blueprint.route("/")
-def new():
-    return render("sessions/new.html")
+
+@sessions_blueprint.route('/google_login')
+def google_login():
+    redirect_uri = url_for('sessions.authorize', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
 
 
-@sessions_blueprint.route("/", method=["POST"])
-def create():
-    username = request.form.get("username")
-    user = User.get_or_none(User.username == username)
-
-    if user and check_password_hash(user.password, password):
-        flash("Welcome!", "success")
+@sessions_blueprint.route('/authorize/google')
+def authorize():
+    print(request.args)
+    oauth.google.authorize_access_token()
+    email = oauth.google.get(
+        'https://www.googleapis.com/oauth2/v2/userinfo').json()['email']
+    user = User.get_or_none(User.email == email)
+    if user:
         login_user(user)
-        session["user_id"] = user.id
-        return redirect(url_for("homepage"))
-
+        # flash(f"Login successful.")
+        return redirect(url_for('sessions.login'))
     else:
-        flash("Bad login")
-        return render("sessions/new.html" username=username)
+        return redirect(url_for('sessions.login'))
 
 
-@sessions_blueprint.route("/logout" method=[POST])
+@sessions_blueprint.route('/')
+def login():
+    if not current_user.is_authenticated:
+        # showing the login form if user is not logged in
+        return render_template('sessions/login.html')
+    else:
+        # if user has already login, they will be redirected to home page
+        return render_template('home.html')
+
+
+@sessions_blueprint.route('/login-check', methods=["POST"])
+def login_check():
+    # check if the email entered inside login form is available inside our database
+    user = User.get_or_none(User.email == request.form['email_input'])
+
+    if user:  # return true if the email is available inside our database
+        password_to_check = request.form['password_input']
+        hashed_password = user.password
+        result = check_password_hash(hashed_password, password_to_check)
+
+        if result:
+            login_user(user)
+
+            flash(f"Login successful.")
+            # session["email"] = request.form['email_input']
+            # flash(f"{session['email']}")
+            return redirect(url_for('sessions.login'))
+        else:
+            flash(f"Login failure.")
+            flash("Email/password is not correct")
+            return redirect(url_for('sessions.login'))
+    else:
+        flash("Email/password is not correct.")
+        return redirect(url_for('sessions.login'))
+
+    # if current_user.is_authenticated:
+    #     return redirect('/')
+
+
+@sessions_blueprint.route('/signout', methods=["POST"])
 @login_required
 def destroy():
-    flash("logged out")
     logout_user()
-    return redirect(url_for("homepage"))
+    return render_template('home.html')
