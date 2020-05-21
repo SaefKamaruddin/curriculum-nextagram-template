@@ -19,24 +19,12 @@ def has_special(word):
 
 
 class User(BaseModel):
-    username = pw.CharField(unique=False)
+    username = pw.CharField(unique=True)
     email = pw.CharField(unique=True, null=False)
     password = pw.TextField(null=False)
-    isAdmin = pw.BooleanField(null=False, default=False)
+    profile_image = pw.CharField(null=True)
 
-    # hash passwords
-
-    # def save(self, *args, **kwargs):
-    #     self.password = generate_password_hash(self.password)
-    #     return super(User, self).save(*args, **kwargs)
-
-
-# create with used email
-# create with unique username
-# Password with restrictions at least 6 chars with one special char, one upper and one lower
-
-
-    def validate_email(self):
+    def validate(self):
         existing_email = User.get_or_none(email=self.email)
         existing_username = User.get_or_none(username=self.username)
 
@@ -62,4 +50,5 @@ class User(BaseModel):
             self.errors.append(
                 "Passwords needs at least one special character")
 
-        self.password = generate_password_hash(self.password)
+        else:
+            self.password = generate_password_hash(self.password)

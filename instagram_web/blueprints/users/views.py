@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models.user import User
+from flask_login import current_user, login_user, login_required
 
 
 users_blueprint = Blueprint('users',
@@ -12,35 +13,39 @@ def new():
     return render_template('users/new.html')
 
 # use a form to create new user
+
+
 @users_blueprint.route('/', methods=['POST'])
 def create():
-    user = User.create(username=request.form["username"],
-                       email=request.form["email"], password=request.form["password"])
+    username_input = request.form["username"]
+    email_input = request.form["email"]
+    password_input = request.form["password"]
+    user = User.create(username=username_input,
+                       email=email_input, password=password_input)
 
-    # if login fail
     if len(user.errors) > 0:
+        flash(f"An error has occured.Sign up failed")
         return render_template('users/new.html', errors=user.errors)
+
     else:
-        return redirect(url_for("homepage"))
+        login_user(user)
+        return redirect(url_for("home"))
 
     # if login succeeds, to be changed
 
 
-@users_blueprint.route('/<username>', methods=["GET"])
-def show(username):
-    pass
-
-
-@users_blueprint.route('/', methods=["GET"])
+@users_blueprint.route('/')
+@users_blueprint.route('/new')
 def index():
-    return "USERS"
-
-
-@users_blueprint.route('/<id>/edit', methods=['GET'])
-def edit(id):
-    pass
-
-
-@users_blueprint.route('/<id>', methods=['POST'])
-def update(id):
-    pass
+    user = {'username': 'Miguel'}
+    posts = [
+        {
+            'author': {'username': 'John'},
+            'body': 'Beautiful day in Portland!'
+        },
+        {
+            'author': {'username': 'Susan'},
+            'body': 'The Avengers movie was so cool!'
+        }
+    ]
+    return render_template('users/new.html', title='Home', user=user, posts=posts)
