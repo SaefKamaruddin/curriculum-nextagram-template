@@ -1,6 +1,7 @@
 from models.base_model import BaseModel
 import peewee as pw
 from werkzeug.security import generate_password_hash
+from playhouse.hybrid import hybrid_property
 import re
 from flask_login import UserMixin, current_user, login_user, logout_user
 
@@ -24,6 +25,14 @@ class User(BaseModel, UserMixin):
     email = pw.CharField(unique=True, null=False)
     password = pw.TextField(null=False)
     profile_image = pw.CharField(null=True)
+
+    @hybrid_property
+    def profile_image_url(self):
+        from app import app
+        if self.image == None:
+            return "#"
+        else:
+            return app.config.get('AWS_DOMAIN') + self.profile_image
 
     def validate(self):
         existing_email = User.get_or_none(email=self.email)

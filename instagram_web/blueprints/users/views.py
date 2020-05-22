@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models.user import User
 from flask_login import current_user, login_user, login_required
+from instagram_web.util.helpers import upload_file_to_aws
 
 
 users_blueprint = Blueprint('users',
@@ -11,6 +12,11 @@ users_blueprint = Blueprint('users',
 @users_blueprint.route('/new', methods=['GET'])
 def new():
     return render_template('users/new.html')
+
+
+@users_blueprint.route('/my_profile', methods=['GET'])
+def my_profile():
+    return render_template('users/my_profile_page.html')
 
 
 # function to create new a new user
@@ -47,3 +53,20 @@ def index():
         }
     ]
     return render_template('users/post.html', title='Home', user=user, posts=posts)
+
+
+@users_blueprint.route('/<id>/image', methods=["POST"])
+@login_required
+def upload_profile_image(id):
+    file = request.files.get('upload_profile_image')
+    print(file)
+    print(file.filename)
+    result = upload_file_to_aws(file)
+    user = User.update(profile_image=file.filename).where(User.id == id)
+    user.execute()
+    print(result)
+
+    # images = Images(user = current_user.id, img = result)
+    # images.save()
+
+    return render_template('users/my_profile_page.html')
