@@ -2,6 +2,7 @@ from models.base_model import BaseModel
 import peewee as pw
 from werkzeug.security import generate_password_hash
 import re
+from flask_login import UserMixin, current_user, login_user, logout_user
 
 # REGEX for password
 
@@ -18,7 +19,7 @@ def has_special(word):
     return re.search("[\W]", word)
 
 
-class User(BaseModel):
+class User(BaseModel, UserMixin):
     username = pw.CharField(unique=True)
     email = pw.CharField(unique=True, null=False)
     password = pw.TextField(null=False)

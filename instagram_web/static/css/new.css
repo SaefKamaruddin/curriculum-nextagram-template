@@ -1,0 +1,10 @@
+.page_header {
+  background-color: #28a745;
+  border-radius: 3px;
+  color: #fff;
+}
+
+.signup_form {
+  width: 50vw;
+  margin: auto;
+}

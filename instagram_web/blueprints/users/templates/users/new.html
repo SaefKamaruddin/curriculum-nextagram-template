@@ -6,6 +6,10 @@
     <title>Sign Up</title>
     <link
       rel="stylesheet"
+      href="{{url_for('static', filename='css/new.css')}}"
+    />
+    <link
+      rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
       integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
       crossorigin="anonymous"
@@ -13,42 +17,49 @@
   </head>
 
   <body>
-    {% extends "_layout.html" %}
-   
-    {% block content %}
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class=flashes>
-                {% for message in messages %}
-                <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    {% for error in errors  %}
-        <li>{{error}}</li>
-    {% endfor %}
-    <form action="{{url_for('users.create')}}" method="POST">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" class="form-control" id="username" name="username" />
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          id="password"
-          name="password"
-        />
-      </div>
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" class="form-control" id="email" name="email" />
-      </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    {% extends "_layout.html" %} {% block content %}
+    <div class="signup_form">
+      <form
+        class="signup_form"
+        action="{{url_for('users.create')}}"
+        method="POST"
+      >
+        <h1 class="page_header">Sign Up</h1>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            class="form-control"
+            id="username"
+            name="username"
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            name="password"
+          />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" class="form-control" id="email" name="email" />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        {% with messages = get_flashed_messages() %} {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+          <li>{{ message }}</li>
+          {% endfor %} {% for error in errors %}
+          <li>{{error}}</li>
+          {% endfor %}
+        </ul>
+        {% endif %} {% endwith %}
+      </form>
+    </div>
     <script
       src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
       integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"

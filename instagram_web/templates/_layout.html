@@ -35,20 +35,24 @@
       >
         <span class="navbar-toggler-icon"></span>
       </button>
-      <a class="navbar-brand" href="{{url_for('home')}}">Nextagram</a>
+      <a class="navbar-brand text-success" href="{{url_for('home')}}"
+        >Nextagram</a
+      >
 
       <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-1">
           <li class="nav-item active">
-            <a class="nav-link" href="#"
+            <a class="nav-link text-success" href="#"
               >Home <span class="sr-only">(current)</span></a
             >
           </li>
+          {% if current_user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="#">Profile Page</a>
+            <a class="nav-link text-success" href="#">Profile Page</a>
           </li>
+          {% endif %}
           <li class="nav-item">
-            <a class="nav-link" href="#">Browse</a>
+            <a class="nav-link text-success" href="#">Browse</a>
           </li>
         </ul>
         <form class="form-inline my-2 my-lg-0">
@@ -58,16 +62,37 @@
             placeholder="Search"
             aria-label="Search"
           />
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
+          <button
+            class="btn btn-outline-success my-2 my-sm-0 m-1"
+            type="submit"
+          >
             Search
           </button>
+          {% if current_user.is_anonymous %}
+          <a
+            class="btn btn-outline-success my-2 my-sm-0 m-1"
+            href="{{url_for('sessions.login_page')}}"
+            role="button"
+            >Sign in</a
+          >
 
           <a
-            class="btn btn-outline-success my-2 my-sm-0 m-2"
+            class="btn btn-outline-success my-2 my-sm-0 m-1"
             href="{{url_for('users.new')}}"
             role="button"
             >Sign up</a
           >
+
+          {%else%}
+
+          <a
+            class="btn btn-outline-success my-2 my-sm-0 m-2"
+            href="{{url_for('sessions.sign_out')}}"
+            role="button"
+            >Sign out</a
+          >
+
+          {%endif%}
         </form>
       </div>
     </nav>

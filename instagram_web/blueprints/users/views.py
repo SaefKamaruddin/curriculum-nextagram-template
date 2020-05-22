@@ -12,9 +12,8 @@ users_blueprint = Blueprint('users',
 def new():
     return render_template('users/new.html')
 
-# use a form to create new user
 
-
+# function to create new a new user
 @users_blueprint.route('/', methods=['POST'])
 def create():
     username_input = request.form["username"]
@@ -25,17 +24,16 @@ def create():
 
     if len(user.errors) > 0:
         flash(f"An error has occured.Sign up failed")
+        print("failed")
         return render_template('users/new.html', errors=user.errors)
 
     else:
         login_user(user)
+        print("pass")
         return redirect(url_for("home"))
 
-    # if login succeeds, to be changed
 
-
-@users_blueprint.route('/')
-@users_blueprint.route('/new')
+@users_blueprint.route('/post')
 def index():
     user = {'username': 'Miguel'}
     posts = [
@@ -48,4 +46,4 @@ def index():
             'body': 'The Avengers movie was so cool!'
         }
     ]
-    return render_template('users/new.html', title='Home', user=user, posts=posts)
+    return render_template('users/post.html', title='Home', user=user, posts=posts)
