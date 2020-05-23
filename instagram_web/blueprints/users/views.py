@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models.user import User
+from models.images import Images
 from flask_login import current_user, login_user, login_required
 from instagram_web.util.helpers import upload_file_to_aws
 
@@ -55,7 +56,7 @@ def index():
     return render_template('users/post.html', title='Home', user=user, posts=posts)
 
 
-@users_blueprint.route('/<id>/image', methods=["POST"])
+@users_blueprint.route('/<id>/profile_image', methods=["POST"])
 @login_required
 def upload_profile_image(id):
     file = request.files.get('upload_profile_image')
@@ -69,4 +70,38 @@ def upload_profile_image(id):
     # images = Images(user = current_user.id, img = result)
     # images.save()
 
-    return render_template('users/my_profile_page.html')
+    return redirect(url_for("users.my_profile"))
+
+
+@users_blueprint.route('/<id>/image', methods=["POST"])
+@login_required
+def upload_image(id):
+    file = request.files.get('upload_profile_image')
+    print(file)
+    print(file.filename)
+    result = upload_file_to_aws(file)
+    image = Images()
+    image.image = file.filename
+    image.user = id
+    image.save()
+
+    print(result)
+
+    # images = Images(user = current_user.id, img = result)
+    # images.save()
+
+    return redirect(url_for("users.my_profile"))
+
+
+@users_blueprint.route('/<id>/update_username', methods=["POST"])
+@login_required
+def update_username(id):
+    username_input = request.form["username"]
+    user = User.update(username=username_input).where(User.id == id)
+    check_username = User.get_or_none(User.username == username_input)
+    if check_username:
+        flash(f"This username has already been taken, try another name")
+        return render_template('users/my_profile_page.html')
+    else:
+        user.execute()
+        return redirect(url_for("users.my_profile"))

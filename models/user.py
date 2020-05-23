@@ -29,7 +29,7 @@ class User(BaseModel, UserMixin):
     @hybrid_property
     def profile_image_url(self):
         from app import app
-        if self.image == None:
+        if self.profile_image == None:
             return "#"
         else:
             return app.config.get('AWS_DOMAIN') + self.profile_image
