@@ -3,6 +3,8 @@ from models.user import User
 from models.images import Images
 from flask_login import current_user, login_user, login_required
 from instagram_web.util.helpers import upload_file_to_aws
+import braintree
+import os
 
 
 users_blueprint = Blueprint('users',
@@ -15,9 +17,22 @@ def new():
     return render_template('users/new.html')
 
 
+@users_blueprint.route('/browse', methods=['GET'])
+def browse():
+    users = User.select().where(User.id != current_user.id)
+    return render_template('users/browse.html', users=users)
+
+
 @users_blueprint.route('/my_profile', methods=['GET'])
 def my_profile():
     return render_template('users/my_profile_page.html')
+
+
+@users_blueprint.route('/profile/<username>', methods=['GET'])
+def profile(username):
+    user = User.get(User.username == username)
+
+    return render_template('users/profile_page.html', user=user)
 
 
 # function to create new a new user
@@ -84,15 +99,10 @@ def upload_image(id):
     image.image = file.filename
     image.user = id
     image.save()
-
     print(result)
-
-    # images = Images(user = current_user.id, img = result)
-    # images.save()
-
     return redirect(url_for("users.my_profile"))
 
-
+# updates username
 @users_blueprint.route('/<id>/update_username', methods=["POST"])
 @login_required
 def update_username(id):
@@ -105,3 +115,14 @@ def update_username(id):
     else:
         user.execute()
         return redirect(url_for("users.my_profile"))
+
+
+# Handle donation from other user to individual photos
+gateway = braintree.BraintreeGateway(
+    braintree.Configuration(
+        braintree.Environment.Sandbox,
+        merchant_id=os.environ.get('BT_MERCHANT_ID'),
+        public_key=os.environ.get('BT_PUBLIC_KEY'),
+        private_key=os.environ.get('BT_PRIVATE_KEY')
+    )
+)

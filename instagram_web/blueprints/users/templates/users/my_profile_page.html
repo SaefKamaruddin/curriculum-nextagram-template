@@ -10,10 +10,6 @@
     />
     <link
       rel="stylesheet"
-      href="{{url_for('static', filename='css/new.css')}}"
-    />
-    <link
-      rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
       integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
       crossorigin="anonymous"
@@ -29,7 +25,7 @@
           <img
             class="profileImage"
             style="width: 150px; height: 150px; border-radius: 50%;"
-            src="https://nextagram-test.s3-ap-southeast-1.amazonaws.com/{{current_user.profile_image}}"
+            src="{{current_user.profile_image_url}}"
           />
         </div>
         <!-- Dropdown icon to display options for user to edit their profile -->
