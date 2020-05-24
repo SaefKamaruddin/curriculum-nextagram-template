@@ -19,7 +19,8 @@ def new():
 
 @users_blueprint.route('/browse', methods=['GET'])
 def browse():
-    users = User.select().where(User.id != current_user.id)
+    users = User.select().where((User.id != current_user.id)
+                                & (User.profile_image != None))
     return render_template('users/browse.html', users=users)
 
 
