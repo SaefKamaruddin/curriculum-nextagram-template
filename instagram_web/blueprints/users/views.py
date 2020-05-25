@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models.user import User
 from models.images import Images
 from models.donation import Donation
+from models.following import Following
 from flask_login import current_user, login_user, login_required
 from instagram_web.util.helpers import upload_file_to_aws
 import braintree
@@ -36,7 +37,8 @@ def my_profile():
 @users_blueprint.route('/profile/<username>', methods=['GET'])
 def profile(username):
     user = User.get(User.username == username)
-    return render_template('users/profile_page.html', user=user)
+    followed = Following.get_or_none(fan=current_user.id, idol=user.id)
+    return render_template('users/profile_page.html', user=user, followed=followed)
 
 
 # function to create new a new user
@@ -156,4 +158,36 @@ def checkout(image_id, username):
     print(image.id)
     print(result.transaction.id)
     print(result.transaction.amount)
+    return render_template('users/profile_page.html', user=user)
+
+
+# function to allow current user(fan) to follow another user(idol)
+# to create a check as to not add another identical record in db
+@users_blueprint.route("/follow_user/<username>", methods=["POST"])
+@login_required
+def follow_user(username):
+    user = User.get(User.username == username)
+    Following.create(idol=user.id, fan=current_user.id)
+
+    return redirect(url_for('users.profile', user=user, username=user.username))
+
+
+@users_blueprint.route("/follow_check/<username>", methods=["GET"])
+@login_required
+def follow_check(username):
+    user = User.get(User.username == username)
+    if Following.get(Following.idol == user.id, Following.fan == current_user.id) == True:
+        return True
+    else:
+        return False
+
+
+@users_blueprint.route("/unfollow_user/<username>", methods=["POST"])
+@login_required
+def unfollow_user(username):
+    user = User.get(User.username == username)
+    unfollow = Following.delete().where(
+        (Following.idol == user.id) & (Following.fan == current_user.id))
+
+    unfollow.execute()
     return render_template('users/profile_page.html', user=user)

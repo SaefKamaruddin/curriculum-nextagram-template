@@ -32,6 +32,46 @@
 
         <!-- diplays logged in users username -->
         <h3 class="username">Name:{{user.username}}</h3>
+        
+        {% if followed  %}
+        <div class="unfollow-button">
+          <form
+            action="{{url_for('users.unfollow_user', username = user.username )}}"
+            method="post">
+            <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+          />
+          <input
+          type="submit"
+          value="Unfollow"
+          class="btn btn-outline-secondary btn-sm"
+          id="submit-button"
+        />
+          </form>
+        {% endif%}
+        {% if not followed %}
+        <!-- Button for current user to follow another user -->
+        <div class="follow-button">
+          <form
+            action="{{url_for('users.follow_user', username = user.username )}}"
+            method="post">
+            <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+          />
+          <input
+          type="submit"
+          value="Follow"
+          class="btn btn-outline-success btn-sm"
+          id="submit-button"
+        />
+          </form>
+
+      {% endif %}
+
         <!-- Generates all images that designated user has uploaded -->
         {% for user_image in user.user_images %}
         <img

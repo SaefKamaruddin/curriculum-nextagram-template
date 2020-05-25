@@ -28,6 +28,7 @@ class User(BaseModel, UserMixin):
     is_private = pw.BooleanField(null=False, default=False)
     about_me = pw.TextField(null=True)
 
+    # adds the aws url to the image file
     @hybrid_property
     def profile_image_url(self):
         from app import app
@@ -36,6 +37,20 @@ class User(BaseModel, UserMixin):
         else:
             return app.config.get('AWS_DOMAIN') + self.profile_image
 
+    # tracks the fans a particular user has
+    @hybrid_property
+    def fans(self):
+        from models.following import Following
+        return User.select().join(Following, on=(User.id == Following.fan_id)).where(Following.idol_id == self.id)
+
+    # tracks the number of user a particular user is following; how many user is a particular user a fan of
+    @hybrid_property
+    def following(self):
+        from models.following import Following
+        return User.select.join(Following, on=(User.id == Following.fan_id)).where(Following.fan_id == self.id)
+
+    # parameters that user data has to fulfill upon data creation
+    # if all parameters fulfilled, password is hashed before being entered into database
     def validate(self):
         existing_email = User.get_or_none(email=self.email)
         existing_username = User.get_or_none(username=self.username)
