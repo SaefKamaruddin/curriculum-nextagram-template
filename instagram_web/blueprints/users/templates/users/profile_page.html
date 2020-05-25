@@ -18,6 +18,7 @@
 
   <body>
     {% extends "_layout.html" %} {% block content %}
+
     <div class="container">
       <div class="pagelayout">
         <div class="profile_image_container">
@@ -31,7 +32,7 @@
 
         <!-- diplays logged in users username -->
         <h3 class="username">Name:{{user.username}}</h3>
-
+        <!-- Generates all images that designated user has uploaded -->
         {% for user_image in user.user_images %}
         <img
           id="userImage.{{user_image.id}}"
@@ -41,7 +42,7 @@
           data-toggle="modal"
           data-target="#Modalfor_{{user_image.id}}"
         />
-
+        <!-- Modal for each image , opening on click of image -->
         <div
           class="modal fade"
           id="Modalfor_{{user_image.id}}"
@@ -82,6 +83,17 @@
                 Code in comments here
               </div>
               <div class="modal-footer">
+                <!-- Button to render new donation page -->
+                <a
+                  class="btn btn-outline-success my-2 my-sm-0 m-1"
+                  href="{{url_for('users.new_donation', image_id =user_image.id , username = user.username )}}"
+                  role="button"
+                >
+                  <img
+                    class="icon"
+                    src="/static/image_asset/donation_icon.png"
+                  />
+                </a>
                 <button
                   type="button"
                   class="btn btn-secondary"
@@ -89,16 +101,11 @@
                 >
                   Close
                 </button>
-                <button type="button" class="btn btn-outline-light">
-                  <img
-                    class="icon"
-                    src="../static/image_asset/donation_icon.png"
-                  />
-                </button>
               </div>
             </div>
           </div>
         </div>
+
         {% endfor %}
       </div>
     </div>
@@ -116,6 +123,14 @@
     <script
       src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
       integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+      crossorigin="anonymous"
+    ></script>
+    <!-- includes the Braintree JS client SDK -->
+    <script src="https://js.braintreegateway.com/web/dropin/1.22.1/js/dropin.min.js"></script>
+
+    <!-- includes jQuery -->
+    <script
+      src="http://code.jquery.com/jquery-3.2.1.min.js"
       crossorigin="anonymous"
     ></script>
   </body>

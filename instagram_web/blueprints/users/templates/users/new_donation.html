@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Donate to {{user.username}}'s photo</title>
+    <link
+      rel="stylesheet"
+      href="{{url_for('static', filename='css/donation.css')}}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+  </head>
+
+  <body>
+    {% extends "_layout.html" %} {% block content %}
+    <div id="container">
+      <!-- provides username and user image that is the target for donation -->
+      <div id="image_info">
+        <h3>You are about to donate to {{user.username}}'s photo</h3>
+
+        <img class="user_Image" src="{{image.image_url}}" />
+      </div>
+
+      <!-- Generates a url using image_id and username  -->
+      <form
+        id="payment-form"
+        action="{{url_for('users.checkout', image_id=image.id, username=user.username)}}"
+        method="POST"
+      >
+        <div class="modal-body">
+          <div id="dropin-wrapper">
+            <div class="form-group">
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+              <input
+                type="hidden"
+                id="payload_nonce"
+                name="paymentMethodNonce"
+              />
+
+              <!-- input field for donation amount -->
+              <label for="amount">Donation amount</label>
+              <input
+                type="number"
+                min="0"
+                step=".01"
+                class="form-control"
+                id="amount"
+                name="amount"
+              />
+            </div>
+            <!-- generates a braintree drop in ui, taking in card information -->
+            <div id="checkout-message"></div>
+            <div id="dropin-container"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+          <input
+            type="submit"
+            value="Donate"
+            class="btn btn-secondary"
+            id="submit-button"
+          />
+        </div>
+      </form>
+    </div>
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+      integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+      integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- includes the Braintree JS client SDK -->
+    <script src="https://js.braintreegateway.com/web/dropin/1.22.1/js/dropin.min.js"></script>
+
+    <!-- includes jQuery -->
+    <script
+      src="http://code.jquery.com/jquery-3.2.1.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      var button = document.querySelector("#submit-button");
+      let payment_form = document.getElementById("payment-form");
+      let payload_input = document.getElementById("payload_nonce");
+
+      braintree.dropin.create(
+        {
+          // Insert your tokenization key here
+          authorization: "{{client_token}}",
+          container: "#dropin-container",
+        },
+        function (createErr, instance) {
+          payment_form.addEventListener("submit", function (e) {
+            console.log("payment form submitted");
+            e.preventDefault();
+            instance.requestPaymentMethod(function (
+              requestPaymentMethodErr,
+              payload
+            ) {
+              payload_input.setAttribute("value", payload.nonce);
+
+              payment_form.submit();
+              console.log("payment form submitted");
+            });
+          });
+        }
+      );
+    </script>
+    {% endblock %}
+  </body>
+</html>

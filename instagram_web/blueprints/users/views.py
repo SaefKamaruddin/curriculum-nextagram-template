@@ -1,10 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models.user import User
 from models.images import Images
+from models.donation import Donation
 from flask_login import current_user, login_user, login_required
 from instagram_web.util.helpers import upload_file_to_aws
 import braintree
+from decimal import Decimal
 import os
+import datetime
 
 
 users_blueprint = Blueprint('users',
@@ -29,10 +32,10 @@ def my_profile():
     return render_template('users/my_profile_page.html')
 
 
+# redirects user to a profile page to corresponding username
 @users_blueprint.route('/profile/<username>', methods=['GET'])
 def profile(username):
     user = User.get(User.username == username)
-
     return render_template('users/profile_page.html', user=user)
 
 
@@ -56,22 +59,7 @@ def create():
         return redirect(url_for("home"))
 
 
-@users_blueprint.route('/post')
-def index():
-    user = {'username': 'Miguel'}
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
-    return render_template('users/post.html', title='Home', user=user, posts=posts)
-
-
+# uploads a user profile image
 @users_blueprint.route('/<id>/profile_image', methods=["POST"])
 @login_required
 def upload_profile_image(id):
@@ -89,6 +77,7 @@ def upload_profile_image(id):
     return redirect(url_for("users.my_profile"))
 
 
+# uploads images to aws and also saves image url into psql db
 @users_blueprint.route('/<id>/image', methods=["POST"])
 @login_required
 def upload_image(id):
@@ -103,12 +92,14 @@ def upload_image(id):
     print(result)
     return redirect(url_for("users.my_profile"))
 
+
 # updates username
 @users_blueprint.route('/<id>/update_username', methods=["POST"])
 @login_required
 def update_username(id):
     username_input = request.form["username"]
-    user = User.update(username=username_input).where(User.id == id)
+    user = User.update(username=username_input,
+                       updated_at=datetime.datetime.now()).where(User.id == id)
     check_username = User.get_or_none(User.username == username_input)
     if check_username:
         flash(f"This username has already been taken, try another name")
@@ -127,3 +118,42 @@ gateway = braintree.BraintreeGateway(
         private_key=os.environ.get('BT_PRIVATE_KEY')
     )
 )
+
+
+# redirects user to a donation page
+# also generates a client token to get braintree approval
+# to do: error checks
+@users_blueprint.route('/new_donation/<image_id>/<username>', methods=['GET'])
+def new_donation(image_id, username):
+    user = User.get(User.username == username)
+    image = Images.get(Images.id == image_id)
+    client_token = gateway.client_token.generate()
+    print(client_token)
+    return render_template('users/new_donation.html', image=image, user=user, client_token=client_token)
+
+
+# processes donation and saves donation information into the psql database
+# to do: error checks
+@users_blueprint.route("/checkout/<image_id>/<username>", methods=["POST"])
+def checkout(image_id, username):
+    print(request.form.get('paymentMethodNonce'))
+    amount = request.form.get('amount')
+    user = User.get(User.username == username)
+    image = Images.get_or_none(Images.id == image_id)
+
+    result = gateway.transaction.sale({
+        "amount": amount,
+        "payment_method_nonce": request.form.get('paymentMethodNonce'),
+        "options": {
+            "submit_for_settlement": True
+        }
+    })
+    Donation.create(user=current_user.id, image=image.id,
+                    transaction_number=result.transaction.id, amount=result.transaction.amount)
+    print(result)
+    print(request.form)
+    print(current_user.id)
+    print(image.id)
+    print(result.transaction.id)
+    print(result.transaction.amount)
+    return render_template('users/profile_page.html', user=user)

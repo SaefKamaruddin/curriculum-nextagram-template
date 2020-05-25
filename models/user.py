@@ -25,6 +25,8 @@ class User(BaseModel, UserMixin):
     email = pw.CharField(unique=True, null=False)
     password = pw.TextField(null=False)
     profile_image = pw.CharField(null=True)
+    is_private = pw.BooleanField(null=False, default=False)
+    about_me = pw.TextField(null=True)
 
     @hybrid_property
     def profile_image_url(self):

@@ -5,7 +5,7 @@ import peewee as pw
 from playhouse.hybrid import hybrid_property
 
 
-class Donation(BaseModel):
+class Comments(BaseModel):
     user = pw.ForeignKeyField(User, backref="comment_receiver", null=True)
     commenter = pw.ForeignKeyField(User, backref="commenter", null=True)
     image = pw.ForeignKeyField(Images, backref="image_commented", null=True)
