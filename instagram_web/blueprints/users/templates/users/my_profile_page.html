@@ -31,6 +31,7 @@
         </div>
         <div class="btn-group">
           <button
+            id="menu-button"
             type="button"
             class="btn btn-outline-light dropdown-toggle"
             data-toggle="dropdown"
@@ -38,6 +39,10 @@
             aria-expanded="false"
           >
             <img class="icon" src="../static/image_asset/menu_icon.png" />
+            <!-- will display if current user has any follow requests pending approval/ block -->
+            {%if follow_request|length > 0 %}
+            <span id="notify"> ! </span>
+            {% endif %}
           </button>
           <div class="dropdown-menu dropdown-menu-right">
             <button
@@ -70,6 +75,7 @@
             >
               Privacy toggle
             </button>
+            <!-- button displaying follow request, will open modal on click -->
             <button
               class="dropdown-item"
               type="button"
@@ -386,6 +392,49 @@
                   data-dismiss="modal"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal for approving / removing users -->
+        <div
+          class="modal fade"
+          id="followRequestModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="followRequestModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="followRequestModalLabel">
+                  Modal title
+                </h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                ...
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-dismiss="modal"
+                >
+                  Close
+                </button>
+                <button type="button" class="btn btn-primary">
+                  Save changes
                 </button>
               </div>
             </div>

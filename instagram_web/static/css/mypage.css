@@ -56,3 +56,15 @@
   padding-left: 4px;
   padding-right: 5px;
 }
+
+#notify {
+  position: relative;
+  background-color: red;
+  border-radius: 50%;
+  font-size: 11px;
+  color: white;
+  padding-left: 4px;
+  padding-right: 1px;
+  right: 10px;
+  top: 6px;
+}
