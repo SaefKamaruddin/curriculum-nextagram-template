@@ -138,7 +138,42 @@
                 </button>
               </div>
               <div class="modal-body">
-                Code in comments here
+
+                {%for comment in comments%}
+                  {{comment.created_at if comment.image_id == user_image.id}}
+                  {{comment.commenter.username if comment.image_id == user_image.id}}
+                  {{comment.comment if comment.image_id == user_image.id}}
+                  
+                 {%endfor%}
+                <div class="comments_form">
+                  <form
+                    class="comments_form"
+                    action="{{url_for('comments.create_comment_profile_page',current_user_id=current_user.id, image_id=user_image.id, username=user.username)}}"
+                    method="POST"
+                  >
+                    
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <div class="form-group">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="comment_input"
+                        name="comment_input"
+                      />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    {% with messages = get_flashed_messages() %} {% if messages %}
+                    <ul class="flashes">
+                      {% for message in messages %}
+                      <li>{{ message }}</li>
+                      {% endfor %} {% for error in errors %}
+                      <li>{{error}}</li>
+                      {% endfor %}
+                    </ul>
+                    {% endif %} {% endwith %}
+                  </form>
+                </div>
               </div>
               <div class="modal-footer">
                 <!-- Button to render new donation page -->

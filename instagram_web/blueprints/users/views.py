@@ -3,6 +3,7 @@ from models.user import User
 from models.images import Images
 from models.donation import Donation
 from models.following import Following
+from models.comments import Comments
 from flask_login import current_user, login_user, login_required
 from instagram_web.util.helpers import upload_file_to_aws
 import braintree
@@ -49,7 +50,8 @@ def profile(username):
         fan=current_user.id, idol=user.id, approved=True)
     approve_pending = Following.get_or_none(
         fan=current_user.id, idol=user.id, approved=False)
-    return render_template('users/profile_page.html', user=user, followed=followed, approve_pending=approve_pending)
+    comments = Comments.select().where(Comments.user_id == user.id)
+    return render_template('users/profile_page.html', user=user, followed=followed, approve_pending=approve_pending, comments=comments)
 
 
 # function to create new a new user
@@ -189,7 +191,7 @@ def follow_user(username):
         Following.create(idol=user.id, fan=current_user.id)
         return redirect(url_for('users.profile', user=user, username=user.username))
 
-
+# de;etes follow record
 @users_blueprint.route("/unfollow_user/<username>", methods=["POST"])
 @login_required
 def unfollow_user(username):
@@ -219,6 +221,7 @@ def dismiss_user(id):
     return redirect(url_for('users.my_profile'))
 
 
+# toggles user privacy on my profile page, controls what other user can see on page as well as changes follow settings
 @users_blueprint.route("/toggle_privacy/<id>", methods=["POST"])
 @login_required
 def toggle_privacy(id):
