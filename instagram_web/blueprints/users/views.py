@@ -30,15 +30,21 @@ def browse():
 
 @users_blueprint.route('/my_profile', methods=['GET'])
 def my_profile():
-    return render_template('users/my_profile_page.html')
+    private = User.get_or_none(id=current_user.id, is_private=True)
+    follow_request = Following.select().where(
+        (Following.idol_id == current_user.id) & (Following.approved == False) & (Following.block == False))
+    return render_template('users/my_profile_page.html', private=private, follow_request=follow_request)
 
 
 # redirects user to a profile page to corresponding username
 @users_blueprint.route('/profile/<username>', methods=['GET'])
 def profile(username):
     user = User.get(User.username == username)
-    followed = Following.get_or_none(fan=current_user.id, idol=user.id)
-    return render_template('users/profile_page.html', user=user, followed=followed)
+    followed = Following.get_or_none(
+        fan=current_user.id, idol=user.id, approved=True)
+    approve_pending = Following.get_or_none(
+        fan=current_user.id, idol=user.id, approved=False)
+    return render_template('users/profile_page.html', user=user, followed=followed, approve_pending=approve_pending)
 
 
 # function to create new a new user
@@ -167,19 +173,13 @@ def checkout(image_id, username):
 @login_required
 def follow_user(username):
     user = User.get(User.username == username)
-    Following.create(idol=user.id, fan=current_user.id)
+    if user.is_private == True:
+        Following.create(idol=user.id, fan=current_user.id, approved=False)
+        return redirect(url_for('users.profile', user=user, username=user.username))
 
-    return redirect(url_for('users.profile', user=user, username=user.username))
-
-
-@users_blueprint.route("/follow_check/<username>", methods=["GET"])
-@login_required
-def follow_check(username):
-    user = User.get(User.username == username)
-    if Following.get(Following.idol == user.id, Following.fan == current_user.id) == True:
-        return True
     else:
-        return False
+        Following.create(idol=user.id, fan=current_user.id)
+        return redirect(url_for('users.profile', user=user, username=user.username))
 
 
 @users_blueprint.route("/unfollow_user/<username>", methods=["POST"])
@@ -191,3 +191,22 @@ def unfollow_user(username):
 
     unfollow.execute()
     return render_template('users/profile_page.html', user=user)
+
+
+@users_blueprint.route("/toggle_privacy/<id>", methods=["POST"])
+@login_required
+def toggle_privacy(id):
+
+    user = User.get_or_none(User.id == id)
+
+    if user.is_private == False:
+        print(current_user.id)
+        user.update(
+            is_private=True, updated_at=datetime.datetime.now()).where(User.id == id).execute()
+        flash(f"Your account has been set to private")
+        return redirect(url_for('users.my_profile'))
+    elif user.is_private == True:
+        user.update(
+            is_private=False, updated_at=datetime.datetime.now()).where(User.id == id).execute()
+        flash(f"Your account is now public")
+        return redirect(url_for('users.my_profile'))

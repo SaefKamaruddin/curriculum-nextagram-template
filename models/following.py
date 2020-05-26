@@ -19,6 +19,8 @@ class Following(BaseModel):
     # idol will have to manually approve  to set to true
     approved = pw.BooleanField(null=False, default=True)
 
+    block = pw.BooleanField(null=False, default=False)
+
     def validate(self):
         if self.fan_id == self.idol_id:
             self.errors.append("Cannot follow self")

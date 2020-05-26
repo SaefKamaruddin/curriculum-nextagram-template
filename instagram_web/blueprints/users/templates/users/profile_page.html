@@ -32,7 +32,25 @@
 
         <!-- diplays logged in users username -->
         <h3 class="username">Name:{{user.username}}</h3>
-        
+
+        {% if approve_pending%}
+        <div class="cancel-follow-button">
+          <form
+            action="{{url_for('users.unfollow_user', username = user.username )}}"
+            method="post">
+            <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+          />
+          <input
+          type="submit"
+          value="undo request"
+          class="btn btn-outline-secondary btn-sm"
+          id="submit-button"
+        />
+          </form>
+        {% endif%}
         {% if followed  %}
         <div class="unfollow-button">
           <form
@@ -51,7 +69,7 @@
         />
           </form>
         {% endif%}
-        {% if not followed %}
+        {% if not followed and not approve_pending%}
         <!-- Button for current user to follow another user -->
         <div class="follow-button">
           <form
@@ -92,7 +110,7 @@
           aria-hidden="true"
         >
           <div
-            class="modal-dialog modal-dialog-centered modal-dialog-centered modal-dialog-scrollable"
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
             role="document"
           >
             <div class="modal-content">

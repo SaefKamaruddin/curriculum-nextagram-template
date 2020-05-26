@@ -8,6 +8,7 @@
       rel="stylesheet"
       href="{{url_for('static', filename='css/mypage.css')}}"
     />
+
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -28,7 +29,6 @@
             src="{{current_user.profile_image_url}}"
           />
         </div>
-        <!-- Dropdown icon to display options for user to edit their profile -->
         <div class="btn-group">
           <button
             type="button"
@@ -62,12 +62,174 @@
             <button class="dropdown-item" type="button">
               Upload photos
             </button>
-            <button class="dropdown-item" type="button">
+            <button
+              class="dropdown-item"
+              type="button"
+              data-toggle="modal"
+              data-target="#changePrivacyModal"
+            >
               Privacy toggle
+            </button>
+            <button
+              class="dropdown-item"
+              type="button"
+              data-toggle="modal"
+              data-target="#followRequestModal"
+            >
+              Follow request {%if follow_request|length > 0 %}
+              <span id="follow_count">{{follow_request|length}}</span>
+              {% endif %}
             </button>
           </div>
         </div>
 
+        <!-- Modal to toggle privacy -->
+        <div
+          class="modal fade has-error"
+          id="changePrivacyModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="changePrivacyModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="changePrivacyModalLabel">
+                  Privacy settings
+                </h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form
+                  action="{{url_for('users.toggle_privacy', id=current_user.id)}}"
+                  method="POST"
+                >
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                  />
+                  <span>Privacy:</span>
+                  <!-- if user has their privacy turned off , this display will show -->
+                  {% if not private %}
+                  <button type="submit" class="btn btn-outline-success btn-sm">
+                    Turn On
+                  </button>
+                  <div class="accordion" id="accordion_privacy_off">
+                    <div class="card">
+                      <div class="card-header" id="headingOne">
+                        <h2 class="mb-0">
+                          <button
+                            class="btn btn-link btn-block text-left"
+                            type="button"
+                            data-toggle="collapse"
+                            data-target="#collapseOne"
+                            aria-expanded="true"
+                            aria-controls="collapseOne"
+                          >
+                            Settings information
+                          </button>
+                        </h2>
+                      </div>
+
+                      <div
+                        id="collapseOne"
+                        class="collapse"
+                        aria-labelledby="headingOne"
+                        data-parent="#accordion_privacy_off"
+                      >
+                        <div class="card-body">
+                          <ul>
+                            <li>Your has privacy settings turned off</li>
+                            <li>This is the default setting</li>
+                            <li>
+                              In this mode, any other user, registered or
+                              otherwise is able to view your account
+                            </li>
+                            <li>
+                              Other users who follow you are automatically
+                              approved
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% else %}
+                  <!-- button display if user privacy setting is on -->
+                  <button type="submit" class="btn btn-outline-danger btn-sm">
+                    Turn Off
+                  </button>
+                  <div class="accordion" id="accordion_privacy_on">
+                    <div class="card">
+                      <div class="card-header" id="headingOne">
+                        <h2 class="mb-0">
+                          <button
+                            class="btn btn-link btn-block text-left"
+                            type="button"
+                            data-toggle="collapse"
+                            data-target="#collapseOne"
+                            aria-expanded="true"
+                            aria-controls="collapseOne"
+                          >
+                            Settings information
+                          </button>
+                        </h2>
+                      </div>
+
+                      <div
+                        id="collapseOne"
+                        class="collapse"
+                        aria-labelledby="headingOne"
+                        data-parent="#accordion_privacy_on"
+                      >
+                        <div class="card-body">
+                          <ul>
+                            <li>Your has privacy settings turned on</li>
+
+                            <li>
+                              In this mode, other users cannot view your profile
+                              information unless they follow you
+                            </li>
+                            <li>
+                              If another user wishes to follow you, you have to
+                              approve their follow manually
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %} {% with messages = get_flashed_messages() %} {% if
+                  messages %}
+                  <ul class="flashes">
+                    {% for message in messages %}
+                    <li>{{ message }}</li>
+                    {% endfor %}
+                  </ul>
+                  {% endif %} {% endwith %}
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-dismiss="modal"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
         <!-- Modal upon clicking on edit username, allows user to update their username -->
 
         <div
