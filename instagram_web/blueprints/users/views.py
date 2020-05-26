@@ -33,7 +33,12 @@ def my_profile():
     private = User.get_or_none(id=current_user.id, is_private=True)
     follow_request = Following.select().where(
         (Following.idol_id == current_user.id) & (Following.approved == False) & (Following.block == False))
-    return render_template('users/my_profile_page.html', private=private, follow_request=follow_request)
+
+    fans = Following.select().where((Following.idol_id == current_user.id)
+                                    & (Following.approved == True))
+    following = Following.select().where((Following.fan_id == current_user.id)
+                                         & (Following.approved == True))
+    return render_template('users/my_profile_page.html', private=private, follow_request=follow_request, fans=fans, following=following)
 
 
 # redirects user to a profile page to corresponding username
@@ -125,6 +130,8 @@ gateway = braintree.BraintreeGateway(
         public_key=os.environ.get('BT_PUBLIC_KEY'),
         private_key=os.environ.get('BT_PRIVATE_KEY')
     )
+
+
 )
 
 
@@ -174,7 +181,8 @@ def checkout(image_id, username):
 def follow_user(username):
     user = User.get(User.username == username)
     if user.is_private == True:
-        Following.create(idol=user.id, fan=current_user.id, approved=False)
+        Following.create(
+            idol=user.id, fan=current_user.id, approved=False)
         return redirect(url_for('users.profile', user=user, username=user.username))
 
     else:
@@ -191,6 +199,24 @@ def unfollow_user(username):
 
     unfollow.execute()
     return render_template('users/profile_page.html', user=user)
+
+
+@users_blueprint.route("/approve/<id>", methods=["POST"])
+@login_required
+def approve_user(id):
+    approve_follower = Following.get(Following.id == id)
+    approve_follower.update(approved=True).where(Following.id == id).execute()
+
+    return redirect(url_for('users.my_profile'))
+
+
+@users_blueprint.route("/dismiss/<id>", methods=["POST"])
+@login_required
+def dismiss_user(id):
+    Following.delete().where((Following.idol_id == current_user.id)
+                             & (Following.fan_id == id)).execute()
+
+    return redirect(url_for('users.my_profile'))
 
 
 @users_blueprint.route("/toggle_privacy/<id>", methods=["POST"])

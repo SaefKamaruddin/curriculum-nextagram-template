@@ -61,10 +61,20 @@
             >
               Edit password
             </button>
-            <button class="dropdown-item" type="button">
-              Edit profile image
+            <button
+              class="dropdown-item"
+              type="button"
+              data-toggle="modal"
+              data-target="#changeProfileImageModal"
+            >
+              Change profile image
             </button>
-            <button class="dropdown-item" type="button">
+            <button
+              class="dropdown-item"
+              type="button"
+              data-toggle="modal"
+              data-target="#uploadImageModal"
+            >
               Upload photos
             </button>
             <button
@@ -86,6 +96,131 @@
               <span id="follow_count">{{follow_request|length}}</span>
               {% endif %}
             </button>
+          </div>
+        </div>
+        <!-- Modal to upload profile image -->
+        <div
+          class="modal fade"
+          id="changeProfileImageModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="changeProfileImageModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="changeProfileImageModalLabel">
+                  Modal title
+                </h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <!-- form to upload /update a profile image -->
+                <form
+                  action="{{url_for('users.upload_profile_image', id=current_user.id)}}"
+                  method="POST"
+                  enctype="multipart/form-data"
+                >
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                  />
+                  <label id="label" for="upload_profile_image"
+                    >Upload profile image:</label
+                  >
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="upload_profile_image"
+                    name="upload_profile_image"
+                  />
+                  <button type="submit" class="btn btn-outline-success">
+                    Save
+                  </button>
+                </form>
+                <!-- end of form -->
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-dismiss="modal"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal to upload images that are not profile image -->
+        <div
+          class="modal fade"
+          id="uploadImageModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="uploadImageModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="uploadImageModalLabel">
+                  Modal title
+                </h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <!-- form to upload images to page -->
+                <form
+                  action="{{url_for('users.upload_image', id=current_user.id)}}"
+                  method="POST"
+                  enctype="multipart/form-data"
+                >
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                  />
+                  <label id="label" for="upload_profile_image"
+                    >Upload profile image:</label
+                  >
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="upload_profile_image"
+                    name="upload_profile_image"
+                  />
+                  <button type="submit" class="btn btn-info">Save</button>
+                </form>
+                <!-- end of form -->
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-dismiss="modal"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -236,8 +371,8 @@
             </div>
           </div>
         </div>
-        <!-- Modal upon clicking on edit username, allows user to update their username -->
 
+        <!-- Modal upon clicking on edit username, allows user to update their username -->
         <div
           class="modal fade has-error"
           id="changeUsernameModal"
@@ -407,11 +542,11 @@
           aria-labelledby="followRequestModalLabel"
           aria-hidden="true"
         >
-          <div class="modal-dialog">
+          <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="followRequestModalLabel">
-                  Modal title
+                  Pending requests
                 </h5>
                 <button
                   type="button"
@@ -423,8 +558,63 @@
                 </button>
               </div>
               <div class="modal-body">
-                ...
+                {%for request in follow_request%}
+                <div class="follower_request" id="follower_{{request.id}}">
+                  <img
+                    class="follow_request_profile_image"
+                    id="follow_request_profile_image_{{request.id}}"
+                    src="{{request.fan.profile_image_url}}"
+                  />
+                  <div class="follow_request_username">
+                    {{request.fan.username}}
+                  </div>
+                  <form
+                    action="{{url_for('users.approve_user', id=request.id)}}"
+                    method="POST"
+                    enctype="multipart/form-data"
+                  >
+                    <input
+                      type="hidden"
+                      name="csrf_token"
+                      value="{{ csrf_token() }}"
+                    />
+                    <div class="approve_button_container">
+                      <button type="submit" class="btn btn-outline-success">
+                        Approve
+                        <img
+                          id="approve_button_{{request.id}}"
+                          class="icon"
+                          src="../static/image_asset/tick2.png"
+                        />
+                      </button>
+                    </div>
+                  </form>
+                  <!-- dismiss a follow request -->
+                  <form
+                    action="{{url_for('users.dismiss_user', id=request.fan.id)}}"
+                    method="POST"
+                    enctype="multipart/form-data"
+                  >
+                    <input
+                      type="hidden"
+                      name="csrf_token"
+                      value="{{ csrf_token() }}"
+                    />
+                    <div class="dismiss_button_container">
+                      <button type="submit" class="btn btn-outline-danger">
+                        Dismiss
+                        <img
+                          id="dismiss_button_{{request.id}}"
+                          class="icon"
+                          src="../static/image_asset/cross.png"
+                        />
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                {%endfor%}
               </div>
+
               <div class="modal-footer">
                 <button
                   type="button"
@@ -433,52 +623,24 @@
                 >
                   Close
                 </button>
-                <button type="button" class="btn btn-primary">
-                  Save changes
-                </button>
               </div>
             </div>
           </div>
         </div>
         <!-- diplays logged in users username -->
-        <h3 class="username">Name:{{current_user.username}}</h3>
-        <!-- form to upload /update a profile image -->
-        <form
-          action="{{url_for('users.upload_profile_image', id=current_user.id)}}"
-          method="POST"
-          enctype="multipart/form-data"
-        >
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <label id="label" for="upload_profile_image"
-            >Upload profile image:</label
-          >
-          <input
-            type="file"
-            class="form-control"
-            id="upload_profile_image"
-            name="upload_profile_image"
-          />
-          <button type="submit" class="btn btn-info">Save</button>
-        </form>
-        <!-- form to upload images to page -->
-        <form
-          action="{{url_for('users.upload_image', id=current_user.id)}}"
-          method="POST"
-          enctype="multipart/form-data"
-        >
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <label id="label" for="upload_profile_image"
-            >Upload profile image:</label
-          >
-          <input
-            type="file"
-            class="form-control"
-            id="upload_profile_image"
-            name="upload_profile_image"
-          />
-          <button type="submit" class="btn btn-info">Save</button>
-        </form>
-
+        <h3 class="username">{{current_user.username}}</h3>
+        <!-- current users follower count -->
+        <div id="follower_count">
+          <span class="follower_count_text">Followers</span>
+          <div class="follower_count">{{fans|length}}</div>
+        </div>
+        <!-- current users following count -->
+        <div id="following_count">
+          <span class="following_count_text">Following</span>
+          <div class="following_count">{{following|length}}</div>
+        </div>
+        <!-- displays uploaded images by current user -->
+        <!-- possible updates; add delete/ multidelete -->
         {% for user_image in current_user.user_images %}
         <img
           class="profileImage"

@@ -68,3 +68,34 @@
   right: 10px;
   top: 6px;
 }
+.follow_request_profile_image {
+  height: 60px;
+  width: 60px;
+  border-radius: 40%;
+}
+
+.follower_request {
+  background-color: rgb(251, 249, 249);
+  margin-top: 3px;
+  border-radius: 30px;
+  padding: 3px;
+  display: flex;
+}
+
+.follow_request_username {
+  width: 150px;
+  margin-top: 18px;
+  margin-left: 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.approve_button_container {
+  margin-top: 10px;
+}
+
+.dismiss_button_container {
+  margin-top: 10px;
+  margin-left: 2px;
+}
