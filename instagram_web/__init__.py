@@ -3,9 +3,11 @@ from flask import render_template, session
 from instagram_web.blueprints.users.views import users_blueprint
 from instagram_web.blueprints.sessions.views import sessions_blueprint
 from instagram_web.blueprints.comments.views import comments_blueprint
+from instagram_web.util.oauth import oauth
+import config
 from flask_assets import Environment, Bundle
 from .util.assets import bundles
-
+oauth.init_app(app)
 assets = Environment(app)
 assets.register(bundles)
 

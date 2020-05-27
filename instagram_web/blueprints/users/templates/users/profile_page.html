@@ -140,7 +140,7 @@
               <div class="modal-body">
 
                 {%for comment in comments%}
-                  {{comment.created_at if comment.image_id == user_image.id}}
+                  <div class="time">{{comment.created_at if comment.image_id == user_image.id}}</div>
                   {{comment.commenter.username if comment.image_id == user_image.id}}
                   {{comment.comment if comment.image_id == user_image.id}}
                   

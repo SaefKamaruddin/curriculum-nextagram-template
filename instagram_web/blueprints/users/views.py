@@ -6,6 +6,7 @@ from models.following import Following
 from models.comments import Comments
 from flask_login import current_user, login_user, login_required
 from instagram_web.util.helpers import upload_file_to_aws
+from instagram_web.util.mail import send_after_signup, send_after_donating, send_after_receiving_donation
 import braintree
 from decimal import Decimal
 import os
@@ -70,6 +71,7 @@ def create():
 
     else:
         login_user(user)
+        send_after_signup_success(email_input)
         print("pass")
         return redirect(url_for("home"))
 
@@ -173,6 +175,8 @@ def checkout(image_id, username):
     print(image.id)
     print(result.transaction.id)
     print(result.transaction.amount)
+    send_after_donating(current_user.email)
+    send_after_receiving_donation(user.email)
     return render_template('users/profile_page.html', user=user)
 
 
