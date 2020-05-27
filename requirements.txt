@@ -39,3 +39,4 @@ webassets==0.12.1
 Werkzeug==0.14.1
 wincertstore==0.2
 WTForms==2.2.1
+peewee-db-evolve==3.7.3
