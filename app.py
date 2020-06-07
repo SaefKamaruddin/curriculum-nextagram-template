@@ -5,11 +5,12 @@ from models.base_model import db
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager
 from models.user import User
-
+import datetime
 web_dir = os.path.join(os.path.dirname(
     os.path.abspath(__file__)), 'instagram_web')
 
 app = Flask('NEXTAGRAM', root_path=web_dir)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
 
 if os.getenv('FLASK_ENV') == 'production':
     app.config.from_object("config.ProductionConfig")
